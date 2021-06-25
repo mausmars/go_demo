@@ -3,7 +3,7 @@ package match_service
 import (
 	"bytes"
 	"container/list"
-	"demo_go/net_demo/service/util"
+	"go_demo/src/net_demo/service/util"
 	"fmt"
 	"go.uber.org/atomic"
 	"time"
