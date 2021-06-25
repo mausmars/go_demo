@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package msg;
+
+//------------------------
+//登录
+message LoginUp{
+    enum MessageEnum{
+        First = 0;
+        CommondId = 10001;
+    };
+}
+
+message LoginDown{
+    enum MessageEnum{
+        First = 0;
+        CommondId = 10002;
+    };
+}

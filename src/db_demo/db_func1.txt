@@ -1,0 +1,35 @@
+https://blog.csdn.net/liushengxi_root/article/details/85333801
+-----------------------------------------------
+执行以下创建表和存储过程
+
+use test ;
+create table  account (accountId int primary key ,total double );
+insert into  account values(1,10000);
+insert into  account values(2,10000);
+insert into  account values(3,10000);
+insert into  account values(4,10000);
+delimiter //
+create procedure transfer(inAccountId int,outAccountId int ,amount double,OUT outStatus INT)
+       begin
+       declare output double ;
+       declare input double;
+            START TRANSACTION;
+            select total into output from account where accountId = outAccountId;
+            select total into input from account where accountId = inAccountId;
+
+            IF output >= input THEN
+                update account set total=total-amount where accountId = outAccountId;
+                update account set total=total+amount where accountId = inAccountId;
+                COMMIT;
+                SET outStatus = 1;
+            ELSE
+                ROLLBACK;
+                SET outStatus = 0;
+            END IF;
+      end //
+delimiter;
+
+测试
+执行转账函数
+call transfer(1, 2, 4000);
+

@@ -1,0 +1,9 @@
+net_host = "0.0.0.0:12345"
+net_buff_size=4096
+net_backlog=1000
+net_keepalive=true
+net_nodely=true
+net_linger=0
+net_read_timeout = 16000
+net_write_timeout = 16000
+net_idle_timeout = 600000

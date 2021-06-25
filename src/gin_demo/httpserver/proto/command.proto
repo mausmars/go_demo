@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option go_package = "protomsg";
+
+message Command {
+    int32 commandId = 1; //指令id
+    bytes body = 2; //指令内容
+}

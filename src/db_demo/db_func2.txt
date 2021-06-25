@@ -1,0 +1,31 @@
+https://blog.csdn.net/liushengxi_root/article/details/85333801
+-----------------------------------------------
+以下触发器 demo
+
+drop table  if exists teacher ;
+create table teacher(tid int  auto_increment primary  key ,
+name varchar(24) not null ,
+money int unsigned ,
+time timestamp default current_timestamp );
+
+delimiter $$
+CREATE TRIGGER tr1 BEFORE INSERT ON teacher
+FOR EACH ROW
+   BEGIN
+       IF (NEW.name='professor' and NEW.money < 4000) THEN
+           SET NEW.money = 4000;
+       end if;
+   end $$
+delimiter ;
+
+
+测试
+Select * from Teacher ;
+insert into teacher  (name,money) values("professor",1000);
+insert into teacher  (name,money) values("lecturer",3000);
+insert into teacher  (name,money) values("professor",0);
+insert into teacher  (name,money) values("lecturer",3000);
+
+show triggers;
+drop trigger tr1;
+

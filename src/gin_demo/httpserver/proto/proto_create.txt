@@ -1,0 +1,5 @@
+go get -u github.com/golang/protobuf/protoc-gen-go
+
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
+protoc -I=. --go_out=. command.proto

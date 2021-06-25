@@ -1,0 +1,15 @@
+CREATE TABLE json_key(
+    uid BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    data JSON NOT NULL,
+    name VARCHAR(32) GENERATED ALWAYS AS (json_extract(data, '$.name')) VIRTUAL
+)ENGINE=INNODB CHARSET=utf8mb4;
+
+alter table json_key add key (name);
+
+INSERT INTO json_key(uid, data) SELECT NULL, JSON_OBJECT('name', 'tom', 'sex', 'male', 'age', '26');
+INSERT INTO json_key(uid, data) SELECT NULL, JSON_OBJECT('sex', 'female', 'age', '29');
+
+
+explain select * from json_key where json_extract(data, '$.name') = 'tom'\G
+
+explain select * from json_key where name = 'tom'\G
