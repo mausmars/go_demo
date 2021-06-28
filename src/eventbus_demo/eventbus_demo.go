@@ -22,29 +22,28 @@ func loginHandle2(event *EventLogin) {
 }
 
 func payHandle(event *EventPay) {
-	fmt.Printf("payHandle %d\n",  event.id)
+	fmt.Printf("payHandle %d\n", event.id)
 }
 
-
-func main(){
+func main() {
 	bus := eventbus.New()
 	bus.Subscribe("login", loginHandle1)
 	bus.Subscribe("login", loginHandle2)
 	bus.Subscribe("pay", payHandle)
 
-	e1:=&EventLogin{
-		id:1,
+	e1 := &EventLogin{
+		id: 1,
 	}
-	e2:=&EventPay{
-		id:1,
+	e2 := &EventPay{
+		id: 1,
 	}
 
 	bus.Publish("login", e1)
 	bus.Publish("pay", e2)
 
-	bus.Unsubscribe("login",loginHandle1)
+	bus.Unsubscribe("login", loginHandle1)
 	bus.Publish("login", e1)
 
-	bus.Unsubscribe("login",loginHandle2)
-	bus.Unsubscribe("pay",nil)
+	bus.Unsubscribe("login", loginHandle2)
+	bus.Unsubscribe("pay", payHandle)
 }
