@@ -1,0 +1,10 @@
+https://learnku.com/articles/41728
+
+
+go tool trace trace.out
+http://127.0.0.1:33479 网址，点击 view trace
+
+
+
+go build mpg_trace2_demo.go
+GODEBUG=schedtrace=1000 ./mpg_trace2_demo.exe

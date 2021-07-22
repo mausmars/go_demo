@@ -1,10 +1,14 @@
 package main
 
-import "C"
 import (
+	"bufio"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
+	"os"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 	"unsafe"
@@ -12,6 +16,36 @@ import (
 
 //https://gist.github.com/PollenPolle/ada4d123a4579f3e22f2c5e30e6f4a02
 //https://github.com/chamaken/cgolmnl/blob/master/inet/inet.go
+//https://gist.github.com/helinwang/2c7bd2867ea5110f70e6431a7c80cd9b
+
+/*
+#include <stdio.h>
+#include <ifaddrs.h>
+#include <string.h>
+
+char* ifaName() {
+    struct ifaddrs *ifa = NULL, *ifaList;
+
+    char* ifaName = "";
+    if (getifaddrs(&ifaList) < 0) {
+        return ifaName;
+    }
+    for (ifa = ifaList; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family != AF_INET) {
+            continue;
+        }
+        if (strcmp(ifa->ifa_name, "lo") == 0) {
+            continue;
+        }
+        ifaName = ifa->ifa_name;
+        break;
+    }
+    //释放对象
+    freeifaddrs(ifaList);
+    return ifaName;
+}
+*/
+import "C"
 
 type Ethhdr struct {
 	Dest   [6]uint8
@@ -62,8 +96,51 @@ func createArpPacket() [60]uint8 {
 	return data
 }
 
+func InterfaceName() string {
+	return C.GoString(C.ifaName())
+}
+
+func Gateway() [4]uint8 {
+	file, err := os.Open("/proc/net/route")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	line := ""
+	br := bufio.NewReader(file)
+	index := 0
+	for {
+		a, _, c := br.ReadLine()
+		index++
+		if c == io.EOF {
+			break
+		}
+		if index == 1 {
+			line = string(a)
+		}
+	}
+	ip := [4]uint8{}
+	if line != "" {
+		ss := strings.Split(line, "\t")
+		s := ss[2]
+
+		for i := 3; i >= 0; i-- {
+			content := "0x" + s[i*2:2]
+			if v, err := strconv.ParseInt(content, 16, 32); err == nil {
+				fmt.Printf("%T|%d|\n", content, v)
+				ip[3-i] = uint8(v)
+			}
+		}
+		// 将 16进制的字符串 转换 byte
+	}
+	return ip
+}
+
 func ArpAttack() {
-	interf, err := net.InterfaceByName("ens33")
+	fmt.Print("arpAttack")
+	ifaname := InterfaceName()
+	interf, err := net.InterfaceByName(ifaname)
 	if err != nil {
 		fmt.Println("Could not find vboxnet interface")
 		return
@@ -102,7 +179,17 @@ func ArpAttack() {
 	}
 }
 
+func test() {
+	//ifaname := InterfaceName()
+	//fmt.Println("ifaname=", ifaname)
+	ip := Gateway()
+	for _, s := range ip {
+		fmt.Print(s, ".")
+	}
+	fmt.Println()
+}
+
 func main() {
-	fmt.Print("arpAttack")
-	ArpAttack()
+	test()
+	//ArpAttack()
 }

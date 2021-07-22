@@ -9,6 +9,17 @@ import (
 	"time"
 )
 
+/**
+同一个方法里打印的线程id不一致。。。
+
+逻辑cpu数量:12
+主协程所属线程id =23236
+协程_3 同一次执行 线程也不同。。。 count= 141855
+协程_10 同一次执行 线程也不同。。。 count= 156698
+协程_12 同一次执行 线程也不同。。。 count= 320174
+协程_13 同一次执行 线程也不同。。。 count= 321676
+
+ */
 func GetCurrentThreadId() int {
 	var user32 *syscall.DLL
 	var GetCurrentThreadId *syscall.Proc
