@@ -1,10 +1,25 @@
 https://learnku.com/articles/41728
 
+go代码追踪
+
+方法1
+https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub
 
 go tool trace trace.out
 http://127.0.0.1:33479 网址，点击 view trace
 
+方法2
 
 
 go build mpg_trace2_demo.go
-GODEBUG=schedtrace=1000 ./mpg_trace2_demo.exe
+wow=schedtrace=1000 ./mpg_trace2_demo.exe
+
+
+方法3
+http://www.evanlin.com/go-gcvis-pprof/
+https://www.graphviz.org/download/
+
+https://github.com/davecheney/gcvis
+go get github.com/davecheney/gcvis
+
+gcvis mpg_trace2_demo.exe -index -http=:6060

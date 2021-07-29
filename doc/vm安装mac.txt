@@ -1,7 +1,8 @@
+https://zhuanlan.zhihu.com/p/337036027
 
 https://github.com/paolo-projects/auto-unlocker
 
-
+支持vm16
 
 下载unlocker
 https://github.com/paolo-projects/auto-unlocker/releases/tag/v1.1.3
@@ -9,6 +10,8 @@ https://github.com/paolo-projects/auto-unlocker/releases/tag/v1.1.3
 解压放入vm安装目录，执行
 Unlocker --install
 会下载600m的东西，然后虚拟机有mac安装选项
+
+
 
 --install (Default behavior when called with no arguments) Installs the patch.
 --uninstall Uninstalls the patch. Works only if the patch was previously installed and the backup folder is intact
