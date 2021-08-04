@@ -93,7 +93,7 @@ func reflectTest3() {
 
 	//** 总结：尽量使用指针，可以保留类型，结构体转interface{} 类型丢失了。。。
 	//感觉go 语言应该禁用interface{}类型转指针的操作！不符合c语言的规则。。。
-	
+
 	typ := reflect.TypeOf(iobj)
 	fmt.Println("typ= ", typ)
 	fmt.Println("Elem typ= ", typ.Elem())
