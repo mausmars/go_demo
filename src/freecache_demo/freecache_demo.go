@@ -24,5 +24,4 @@ func main(){
 	fmt.Println("deleted key ", affected)
 	fmt.Println("entry count ", cache.EntryCount())
 
-	
 }
