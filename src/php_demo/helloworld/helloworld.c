@@ -110,5 +110,5 @@ ZEND_GET_MODULE(helloworld)
 #endif
 
 PHP_FUNCTION(hello){
-     php_printf("hello world!");
+     php_printf("hello world! \n");
 }

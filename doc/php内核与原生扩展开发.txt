@@ -72,7 +72,8 @@ Installing shared extensions:     /software/php-7.3.29/lib/php/extensions/no-deb
 
 修改 php.ini 添加以下内容
 vi /software/php-7.3.29/lib/php.ini
-extension=/software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/helloworld.so
+# extension=/software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/helloworld.so
+可以直接用php启动参数依赖so
 
 查看php 模块发现多了 helloworld模块
 $ php -m
@@ -80,7 +81,7 @@ $ php -m
 测试 创建 helloworld.php 文件
 <?php hello(); ?>
 
-php helloworld.php
+php -d extension=/software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/helloworld.so helloworld.php
 -----------------------------------------------
 
 

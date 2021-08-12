@@ -1,0 +1,14 @@
+wget https://download.redis.io/releases/redis-6.2.5.tar.gz
+tar -zxvf redis-6.2.5.tar.gz
+
+cd /software/redis-6.2.5
+make
+
+export REDIS_HOME=/software/redis-6.2.5
+export PATH=$REDIS_HOME/src:$PATH
+
+启动
+redis-server /software/redis-6.2.5/redis.conf
+
+
+
