@@ -9,8 +9,6 @@ go tool trace trace.out
 http://127.0.0.1:33479 网址，点击 view trace
 
 方法2
-
-
 go build mpg_trace2_demo.go
 wow=schedtrace=1000 ./mpg_trace2_demo.exe
 
@@ -23,3 +21,4 @@ https://github.com/davecheney/gcvis
 go get github.com/davecheney/gcvis
 
 gcvis mpg_trace2_demo.exe -index -http=:6060
+

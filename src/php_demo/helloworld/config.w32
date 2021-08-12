@@ -1,0 +1,7 @@
+ARG_ENABLE('helloworld', 'helloworld support', 'no');
+
+if (PHP_HELLOWORLD != 'no') {
+	AC_DEFINE('HAVE_HELLOWORLD', 1, 'helloworld support enabled');
+
+	EXTENSION('helloworld', 'helloworld.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+}

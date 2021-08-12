@@ -1,0 +1,88 @@
+https://learnku.com/docs/php-internals/php7
+https://www.phpinternalsbook.com/php7/build_system/building_extensions.html
+
+---------------------------------------------
+https://github.com/php/php-src
+git clone https://github.com/php/php-src.git
+cd php-src
+# 默认情况下是在master分支上
+# 开发版本。你可以改为检出稳定分支：
+git checkout php-7.3.29
+
+安装编译软件
+apt-get install build-essential autoconf libtool bison re2c
+
+在php-src目录下执行
+$ ./buildconf --force
+$ ./configure --prefix=/software/php-7.3.29
+$ make -j3
+$ make install
+
+export PHP_HOME=/software/php-7.3.29
+export PATH=$PHP_HOME/bin:$PATH
+
+显示php.ini位置
+./php --ini
+cp /software/php-src/php.ini-development /software/php-7.3.29/lib/php.ini
+
+查出 PHP 库包含了哪些扩展
+$ sapi/cli/php -m
+$ php-config
+
+如果需要重新编译，再执行之前的安装流程
+$ make clean
+
+安装swoole参考对应的txt文件
+
+----------------------------------------------
+构建扩展功能
+在ext目录执行命令
+$ php /software/php-src/ext/ext_skel.php --ext helloworld
+
+在/software/php-src/ext 下生成名为helloworld的PHP扩展的基本骨架
+
+//拷贝到虚拟机共享目录，进行ide的修改
+cp -R helloworld /mnt/hgfs/vm_share/go_demo/src/php_demo
+
+-----------------------------------------------
+修改文件
+php_helloworld.h 最后加上这一行
+PHP_FUNCTION(hello);
+
+helloworld.c 文件加上 PHP_FE(hello,NULL)
+static const zend_function_entry helloworld_functions[] = {
+	PHP_FE(helloworld_test1,		arginfo_helloworld_test1)
+	PHP_FE(helloworld_test2,		arginfo_helloworld_test2)
+	PHP_FE(hello,NULL)
+	PHP_FE_END
+};
+
+helloworld.c 文件最后加上以下函数
+PHP_FUNCTION(hello){
+     php_printf("hello world! \n");
+}
+
+$ cd /software/php-src/ext/helloworld
+$ phpize
+$ ./configure --with-php-config=/software/php-7.3.29/bin/php-config
+$ make
+$ make install
+会在下边的目录生成 helloworld.so 文件
+Installing shared extensions:     /software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/
+
+修改 php.ini 添加以下内容
+vi /software/php-7.3.29/lib/php.ini
+extension=/software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/helloworld.so
+
+查看php 模块发现多了 helloworld模块
+$ php -m
+
+测试 创建 helloworld.php 文件
+<?php hello(); ?>
+
+php helloworld.php
+-----------------------------------------------
+
+
+
+

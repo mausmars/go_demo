@@ -1,0 +1,8 @@
+debian10
+
+$ apt-get install php7.3
+$ php -v
+
+php基础
+https://www.kancloud.cn/lifei6671/php-extention-dev/672863
+
