@@ -1,0 +1,147 @@
+https://blog.csdn.net/qq_15790035/article/details/101016399
+安装环境软件
+apt-get install build-essential gcc g++ automake git-core autoconf make patch libtool libssl-dev grep binutils zlibc libc6 libbz2-dev cmake subversion libboost-all-dev
+
+https://packages.debian.org/buster/database/
+libmysql++-dev mysql-server
+
+debian安装mysql client
+apt-get install default-libmysqlclient-dev
+apt-get install default-mysql-client
+
+下载代码
+git clone https://github.com/cmangos/mangos-tbc.git
+git clone https://github.com/cmangos/tbc-db.git
+
+编译安装
+cmake ../mangos-tbc -DCMAKE_INSTALL_PREFIX=\../mangos-tbc/run -DBUILD_EXTRACTORS=ON -DPCH=1 -DDEBUG=0 -DBUILD_PLAYERBOT=ON
+make
+make install
+
+安装完成后，将客户端内Data文件夹上传至服务器/home/mangos/mangos/run/bin/tools
+
+抽取数据资源
+cd /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/bin/tools
+chmod 755 ExtractResources.sh
+chmod 755 MoveMapGen.sh
+./ExtractResources.sh
+
+导入数据库表，发现有重复主键的问题
+cd /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 < create/db_create_mysql.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbccharacters < base/characters.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcrealmd < base/realmd.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < base/mangos.sql
+for sql_file in $(ls base/dbc/original_data/*.sql); do mysql -uroot -p1q2w3e4r -h10.79.19.79 --database=tbcmangos < $sql_file ; done
+for sql_file in $(ls base/dbc/cmangos_fixes/*.sql); do mysql -uroot -p1q2w3e4r -h10.79.19.79 --database=tbcmangos < $sql_file ; done
+
+初始化数据库
+cd /mnt/hgfs/vm_share/wow_server/cmangos/tbc-db
+./InstallFullDB.sh
+vi InstallFullDB.config
+ 
+执行上一步后，同级目录会生成一个InstallFullDB.config的文件，需要对数据库进行编辑
+MANGOS_DBUSER="数据库账号"
+MANGOS_DBPASS="数据库密码"
+CORE_PATH="" 改为 CORE_PATH="/mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc"
+ 
+wq保存退出
+再次执行./InstallFullDB.sh
+
+
+汉化数据库
+cd /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/sql
+git clone https://github.com/keyshuwen/wow_db_chinese.git
+ 
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/creature_ai_texts.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/game_event.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/gossip_texts.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_areatrigger_teleport.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_creature.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_gameobject.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_item.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_npc_text.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_page_text.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_points_of_interest.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_quest.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/locales_trainer_greeting.sql
+mysql -uroot -p1q2w3e4r -h10.79.19.79 tbcmangos < wow_db_chinese/DB-tbc/mangos_string.sql
+
+运行sql
+DELETE FROM realmlist WHERE id=1;
+INSERT INTO realmlist (id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel)
+VALUES ('1', 'ml测试', '10.79.19.216', '8085', '1', '0', '1', '0');
+
+修改配置文件
+cd /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/etc
+mv realmd.conf.dist realmd.conf
+vi realmd.conf
+###########编辑############
+LoginDatabaseInfo = "10.79.19.79;3306;root;1q2w3e4r;tbcrealmd"
+#xxxx 账号认证服务器端口号对应客户端realmlist.wtf文件
+RealmServerPort = 8085
+##############################
+mv mangosd.conf.dist mangosd.conf
+vi mangosd.conf
+###########编辑############
+DataDir = "/home/mangos/mangos/run/bin/tools"
+LoginDatabaseInfo     = "10.79.19.79;3306;root;1q2w3e4r;tbcrealmd"
+WorldDatabaseInfo     = "10.79.19.79;3306;root;1q2w3e4r;tbcmangos"
+CharacterDatabaseInfo = "10.79.19.79;3306;root;1q2w3e4r;tbccharacters"
+WorldServerPort = xxxx 游戏世界服务器端口号对应数据库realmlist表内端口号
+
+
+
+配置启动服务
+touch /etc/systemd/system/realmd.service
+vi /etc/systemd/system/realmd.service
+#################复制内容#####################
+[Unit]
+Description=Realmd service
+After=network.target mariadb.service
+ 
+[Service]
+Type=simple
+User=mangos
+ExecStart=/mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/bin/realmd -c /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/etc/realmd.conf
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target
+#########################################
+ 
+touch /etc/systemd/system/mangosd.service
+vi /etc/systemd/system/mangosd.service
+#################复制内容#####################
+[Unit]
+Description=WoW Vanilla service
+After=network.target mariadb.service getty@tty3.service
+ 
+[Service]
+Type=simple
+User=mangos
+ExecStart=/mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/bin/mangosd -c /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/etc/mangosd.conf
+WorkingDirectory=/mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/bin/tools
+StandardInput=tty
+TTYPath=/dev/tty3
+TTYReset=yes
+TTYVHangup=yes
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target
+#########################################
+
+运行
+
+systemctl daemon-reload
+systemctl start realmd
+systemctl start mangosd
+systemctl status realmd
+systemctl status mangosd
+systemctl enable realmd
+systemctl enable mangosd
+
+
+
+

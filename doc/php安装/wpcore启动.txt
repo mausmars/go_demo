@@ -1,0 +1,6 @@
+lsof -i:3724
+
+php script Server/start auth
+php script Server/start world
+
+
