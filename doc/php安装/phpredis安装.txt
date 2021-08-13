@@ -1,0 +1,13 @@
+wget https://github.com/nicolasff/phpredis/archive/5.3.4.tar.gz
+
+tar -zxvf 5.3.4.tar.gz
+cd phpredis-5.3.4
+
+phpize
+
+./configure --with-php-config=/software/php-7.3.29/bin/php-config
+make
+make install
+
+vi /software/php-7.3.29/lib/php.ini
+extension=/software/php-7.3.29/lib/php/extensions/no-debug-non-zts-20180731/redis.so

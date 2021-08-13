@@ -14,7 +14,7 @@ apt-get install build-essential autoconf libtool bison re2c
 
 在php-src目录下执行
 $ ./buildconf --force
-$ ./configure --prefix=/software/php-7.3.29
+$ ./configure --prefix=/software/php-7.3.29 --enable-mysqlnd
 $ make -j3
 $ make install
 
