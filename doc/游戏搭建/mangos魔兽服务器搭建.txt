@@ -131,6 +131,11 @@ Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 #########################################
+
+cd /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/bin
+./realmd -c /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/etc/realmd.conf
+./mangosd -c /mnt/hgfs/vm_share/wow_server/cmangos/mangos-tbc/run/etc/mangosd.conf
+
 ----------------------------------------------------------------
 运行
 systemctl daemon-reload
