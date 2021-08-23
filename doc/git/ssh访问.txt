@@ -1,5 +1,5 @@
 ssh-keygen -t rsa -b 4096 -C "dalaoshuxxx@gmail.com"
 
 
-
+C:\Users\Admin\.ssh\id_rsa
 
