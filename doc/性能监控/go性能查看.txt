@@ -1,0 +1,36 @@
+apt-get install graphviz
+
+go get github.com/pkg/profile
+//-----------------------------------------------------------------
+https://segmentfault.com/a/1190000016354834
+https://github.com/pkg/profile
+//-----------------------------------------------------------------
+
+linux
+time go run /mnt/hgfs/vm_share/go_demo/src/pprof_demo/cup_demo.go
+//-----------------------------------------------------------------
+go run /mnt/hgfs/vm_share/go_demo/src/pprof_demo/cup_demo1.go
+分析
+go tool pprof /tmp/profile704343038/cpu.pprof
+输入top
+(pprof) top
+
+go run /mnt/hgfs/vm_share/go_demo/src/pprof_demo/cup_demo2.go
+分析
+go tool pprof /tmp/profile530589763/cpu.pprof
+输入top
+(pprof) top
+//-----------------------------------------------------------------
+分配对象 vs. 使用中的对象
+内存分析有两种选择，以 go tool pprof 工具的标识命名：
+-alloc_objects 报告每次分配时的所在的地方
+-inuse_objects 报告被使用的地方，可以在 profile 文件的末尾找到
+
+go run /mnt/hgfs/vm_share/go_demo/src/pprof_demo/gc_demo.go
+//导出pdf
+go tool pprof --pdf -alloc_objects /tmp/profile556794870/mem.pprof > gc.pdf
+
+go tool pprof -web -alloc_objects /tmp/profile556794870/mem.pprof
+
+go tool pprof --pdf /tmp/profile405925748/block.pprof > block.pdf
+

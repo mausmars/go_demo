@@ -25,6 +25,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
+	github.com/pkg/profile v1.6.0 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/satori/go.uuid v1.2.0
 	github.com/shamaton/msgpack v1.1.1
