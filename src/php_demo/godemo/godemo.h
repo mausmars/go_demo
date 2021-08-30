@@ -19,7 +19,7 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
-#line 5 "hello.go"
+#line 5 "godemo.go"
 
 typedef struct  {
     int A;
@@ -76,8 +76,8 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern void hello();
-extern GoInt add(GoInt a, GoInt b);
+extern void godemoHello();
+extern GoInt godemoAdd(GoInt a, GoInt b);
 extern TestBean createTestBean(GoInt a, GoInt b);
 
 #ifdef __cplusplus

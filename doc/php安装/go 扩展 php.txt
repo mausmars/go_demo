@@ -1,0 +1,45 @@
+https://studygolang.com/articles/26945
+
+---------------------------------
+cd /software/php-src/ext
+
+php /software/php-src/ext/ext_skel.php --ext godemo
+
+cd godemo
+phpize
+./configure --with-php-config=/software/php-7.3.29/bin/php-config
+
+写godemo.go
+cp godemo.go /software/php-src/ext/godemo
+
+编译生成so文件
+CGO_CFLAGS="-g -O2 -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 \
+-I. -DPHP_ATOM_INC \
+-I/software/php-src \
+-I/software/php-src/include \
+-I/software/php-src/main \
+-I/software/php-src/TSRM \
+-I/software/php-src/Zend \
+-I/software/php-src/ext \
+-I/software/php-src/ext/date/lib \
+-DHAVE_CONFIG_H -DCOMPILE_DL_GOPHP -fPIC -DPIC" \
+CGO_LDFLAGS="-Wl,--export-dynamic -Wl,--unresolved-symbols=ignore-all -Wl,-z,nodelete" \
+go build -p 1 -gcflags "-l" -buildmode=c-shared -o godemo.so godemo.go
+
+vi /software/php-7.3.29/lib/php.ini
+extension=/software/php-src/ext/godemo/godemo.so
+
+php -m
+未发现相应模块。。。
+
+写测试godemo.php
+php -d extension=/software/php-src/ext/godemo/godemo.so godemo.php
+
+执行不对。。。测试失败。。。
+
+------------------------------------------
+方案2
+go install -buildmode=shared -linkshared std
+go build -buildmode=c-shared -o godemo.so godemo.go
+
+php -d extension=/mnt/hgfs/vm_share/go_demo/src/php_demo/godemo/godemo.so godemo.php

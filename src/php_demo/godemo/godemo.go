@@ -10,13 +10,13 @@ typedef struct  {
 */
 import "C"
 
-//export hello
-func hello() {
+//export godemoHello
+func godemoHello() {
 	fmt.Println("hello world")
 }
 
-//export add
-func add(a, b int) int {
+//export godemoAdd
+func godemoAdd(a, b int) int {
 	return a + b
 }
 

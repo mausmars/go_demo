@@ -45,6 +45,10 @@ $ php /software/php-src/ext/ext_skel.php --ext helloworld
 cp -R helloworld /mnt/hgfs/vm_share/go_demo/src/php_demo
 
 -----------------------------------------------
+https://www.jianshu.com/p/98eec8b08a8e
+扩展的构成及编译
+https://github.com/pangudashu/php7-internal/blob/master/7/extension_intro.md
+
 修改文件
 php_helloworld.h 最后加上这一行
 PHP_FUNCTION(hello);
