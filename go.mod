@@ -25,16 +25,18 @@ require (
 	github.com/modern-go/reflect2 v1.0.1
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
-	github.com/pkg/profile v1.6.0 // indirect
+	github.com/panjf2000/gnet v1.5.3
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/satori/go.uuid v1.2.0
 	github.com/shamaton/msgpack v1.1.1
+	github.com/smallnest/goframe v1.0.0
 	github.com/streadway/amqp v1.0.0
-	go.uber.org/atomic v1.5.0
-	go.uber.org/zap v1.13.0
+	go.uber.org/atomic v1.8.0
+	go.uber.org/zap v1.18.1
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+	golang.org/x/tools v0.0.0-20191108193012-7d206e10da11
 	gopkg.in/go-playground/validator.v8 v8.18.2
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 
