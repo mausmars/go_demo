@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"go_demo/src/gnet_demo/custom_codec/protocol"
+	"go_demo/src/gnet_demo/my_demo/protocol"
 	"io"
 	"log"
 	"net"
@@ -69,8 +69,8 @@ func ClientEncode(pbVersion, actionType uint16, data []byte) ([]byte, error) {
 }
 
 // ClientDecode :
-func ClientDecode(rawConn net.Conn) (*protocol.CustomLengthFieldProtocol, error) {
-	newPackage := protocol.CustomLengthFieldProtocol{}
+func ClientDecode(rawConn net.Conn) (*protocol.NetDataProtocol, error) {
+	newPackage := protocol.NetDataProtocol{}
 	headData := make([]byte, protocol.DefaultHeadLength)
 	n, err := io.ReadFull(rawConn, headData)
 	if n != protocol.DefaultHeadLength {

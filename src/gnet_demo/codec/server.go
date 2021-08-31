@@ -13,6 +13,7 @@ import (
 
 type codecServer struct {
 	*gnet.EventServer
+
 	addr       string
 	multicore  bool
 	async      bool
@@ -66,7 +67,6 @@ func testCodecServe(addr string, multicore, async bool, codec gnet.ICodec) {
 func main() {
 	var port int
 	var multicore bool
-
 	// Example command: go run server.go --port 9000 --multicore=true
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.BoolVar(&multicore, "multicore", true, "multicore")

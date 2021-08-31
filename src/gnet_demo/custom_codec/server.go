@@ -21,8 +21,7 @@ type customCodecServer struct {
 }
 
 func (cs *customCodecServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
-	log.Printf("Test codec server is listening on %s (multi-cores: %t, loops: %d)\n",
-		srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
+	log.Printf("Test codec server is listening on %s (multi-cores: %t, loops: %d)\n", srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
 	return
 }
 
@@ -42,16 +41,6 @@ func (cs *customCodecServer) React(frame []byte, c gnet.Conn) (out []byte, actio
 	return
 }
 
-func testCustomCodecServe(addr string, multicore, async bool, codec gnet.ICodec) {
-	var err error
-	codec = &protocol.CustomLengthFieldProtocol{}
-	cs := &customCodecServer{addr: addr, multicore: multicore, async: async, codec: codec, workerPool: goroutine.Default()}
-	err = gnet.Serve(cs, addr, gnet.WithMulticore(multicore), gnet.WithTCPKeepAlive(time.Minute*5), gnet.WithCodec(codec))
-	if err != nil {
-		panic(err)
-	}
-}
-
 func main() {
 	var port int
 	var multicore bool
@@ -60,5 +49,12 @@ func main() {
 	flag.BoolVar(&multicore, "multicore", true, "multicore")
 	flag.Parse()
 	addr := fmt.Sprintf("tcp://:%d", port)
-	testCustomCodecServe(addr, multicore, false, nil)
+
+	async := false
+	codec := &protocol.CustomLengthFieldProtocol{}
+	cs := &customCodecServer{addr: addr, multicore: multicore, async: async, codec: codec, workerPool: goroutine.Default()}
+	err := gnet.Serve(cs, addr, gnet.WithMulticore(multicore), gnet.WithTCPKeepAlive(time.Minute*5), gnet.WithCodec(codec))
+	if err != nil {
+		panic(err)
+	}
 }
