@@ -22,7 +22,6 @@ func (es *echoServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 	// Echo synchronously.
 	out = frame
 	return
-
 	/*
 		// Echo asynchronously.
 		data := append([]byte{}, frame...)
@@ -37,12 +36,10 @@ func (es *echoServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 func main() {
 	var addr string
 	var multicore bool
-
 	// Example command: go run echo.go --sock echo.sock --multicore=true
 	flag.StringVar(&addr, "sock", "echo.sock", "--port 9000")
 	flag.BoolVar(&multicore, "multicore", false, "--multicore true")
 	flag.Parse()
-
 	echo := new(echoServer)
 	log.Fatal(gnet.Serve(echo, fmt.Sprintf("unix://%s", addr), gnet.WithMulticore(multicore)))
 }

@@ -28,11 +28,9 @@ func (cs *customCodecServer) OnInitComplete(srv gnet.Server) (action gnet.Action
 
 func (cs *customCodecServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
 	fmt.Println("frame:", string(frame))
-
 	// store customize protocol header param using `c.SetContext()`
 	item := protocol.CustomLengthFieldProtocol{Version: protocol.DefaultProtocolVersion, ActionType: protocol.ActionData}
 	c.SetContext(item)
-
 	if cs.async {
 		data := append([]byte{}, frame...)
 		_ = cs.workerPool.Submit(func() {
@@ -57,7 +55,6 @@ func testCustomCodecServe(addr string, multicore, async bool, codec gnet.ICodec)
 func main() {
 	var port int
 	var multicore bool
-
 	// Example command: go run server.go --port 9000 --multicore=true
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.BoolVar(&multicore, "multicore", true, "multicore")

@@ -16,14 +16,12 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
-
 	encoderConfig := goframe.EncoderConfig{
 		ByteOrder:                       binary.BigEndian,
 		LengthFieldLength:               4,
 		LengthAdjustment:                0,
 		LengthIncludesLengthFieldLength: false,
 	}
-
 	decoderConfig := goframe.DecoderConfig{
 		ByteOrder:           binary.BigEndian,
 		LengthFieldOffset:   0,
@@ -31,7 +29,6 @@ func main() {
 		LengthAdjustment:    0,
 		InitialBytesToStrip: 4,
 	}
-
 	fc := goframe.NewLengthFieldBasedFrameConn(encoderConfig, decoderConfig, conn)
 	err = fc.WriteFrame([]byte("hello"))
 	if err != nil {
@@ -41,7 +38,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	buf, err := fc.ReadFrame()
 	if err != nil {
 		panic(err)

@@ -19,34 +19,27 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
-
 	go func() {
 		for {
-
 			response, err := ClientDecode(conn)
 			if err != nil {
 				log.Printf("ClientDecode error, %v\n", err)
 			}
-
 			log.Printf("receive , %v, data:%s\n", response, string(response.Data))
-
 		}
 	}()
-
 	data := []byte("hello")
 	pbdata, err := ClientEncode(protocol.DefaultProtocolVersion, protocol.ActionData, data)
 	if err != nil {
 		panic(err)
 	}
 	conn.Write(pbdata)
-
 	data = []byte("world")
 	pbdata, err = ClientEncode(protocol.DefaultProtocolVersion, protocol.ActionData, data)
 	if err != nil {
 		panic(err)
 	}
 	conn.Write(pbdata)
-
 	select {}
 }
 

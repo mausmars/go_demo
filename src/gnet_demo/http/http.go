@@ -49,7 +49,6 @@ func (hc *httpCodec) Encode(c gnet.Conn, buf []byte) (out []byte, err error) {
 func (hc *httpCodec) Decode(c gnet.Conn) (out []byte, err error) {
 	buf := c.Read()
 	c.ResetBuffer()
-
 	// process the pipeline
 	var leftover []byte
 pipeline:
@@ -88,17 +87,13 @@ func (hs *httpServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 func main() {
 	var port int
 	var multicore bool
-
 	// Example command: go run http.go --port 8080 --multicore=true
 	flag.IntVar(&port, "port", 8080, "server port")
 	flag.BoolVar(&multicore, "multicore", true, "multicore")
 	flag.Parse()
-
 	res = "Hello World!\r\n"
-
 	http := new(httpServer)
 	hc := new(httpCodec)
-
 	// Start serving!
 	log.Fatal(gnet.Serve(http, fmt.Sprintf("tcp://:%d", port), gnet.WithMulticore(multicore), gnet.WithCodec(hc)))
 }

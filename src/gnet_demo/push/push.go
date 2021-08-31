@@ -56,7 +56,6 @@ func main() {
 	var multicore bool
 	var interval time.Duration
 	var ticker bool
-
 	// Example command: go run push.go --port 9000 --tick 1s --multicore=true
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.BoolVar(&multicore, "multicore", true, "multicore")
