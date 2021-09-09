@@ -60,7 +60,7 @@ func (s *TcpServer) Tick() (delay time.Duration, action gnet.Action) {
 func (s *TcpServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
 	fmt.Println("frame:", string(frame))
 	// store customize protocol header param using `c.SetContext()`
-	item := protocol.NetDataProtocol{Version: protocol.DefaultProtocolVersion, ActionType: protocol.ActionData}
+	item := protocol.NetDataProtocol{CommandId: protocol.TestCommandId_Down}
 	c.SetContext(item)
 	if s.async {
 		data := append([]byte{}, frame...)

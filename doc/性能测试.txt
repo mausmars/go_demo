@@ -1,0 +1,7 @@
+https://pkg.go.dev/cmd/go#hdr-Testing_flags
+
+go test -bench=. -benchmem -cpu 4
+
+
+
+

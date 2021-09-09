@@ -11,6 +11,46 @@ import (
 	"net"
 )
 
+type TcpClient struct {
+	host     string
+	port     uint
+	protocol *protocol.NetDataProtocol
+
+	conn net.Conn
+}
+
+func (s *TcpClient) Startup() {
+	addr := fmt.Sprintf("%s:%d", s.host, s.port)
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+	s.conn = conn
+	go func() {
+		for {
+			response, err := ClientDecode(conn)
+			if err != nil {
+				log.Printf("ClientDecode error, %v\n", err)
+			}
+			log.Printf("receive, msg=%s\n", string(response.Data))
+		}
+	}()
+}
+
+func (s *TcpClient) Shutdown() {
+	if s.conn != nil {
+		s.conn.Close()
+	}
+}
+
+func (s *TcpClient) Send(data []byte) {
+	pbdata, err := ClientEncode(protocol.TestCommandId_Up, data)
+	if err != nil {
+		panic(err)
+	}
+	s.conn.Write(pbdata)
+}
+
 // Example command: go run client.go
 func main() {
 	conn, err := net.Dial("tcp", "127.0.0.1:9000")
@@ -24,17 +64,17 @@ func main() {
 			if err != nil {
 				log.Printf("ClientDecode error, %v\n", err)
 			}
-			log.Printf("receive , %v, data:%s\n", response, string(response.Data))
+			log.Printf("receive, msg=%s\n", string(response.Data))
 		}
 	}()
 	data := []byte("hello")
-	pbdata, err := ClientEncode(protocol.DefaultProtocolVersion, protocol.ActionData, data)
+	pbdata, err := ClientEncode(protocol.TestCommandId_Up, data)
 	if err != nil {
 		panic(err)
 	}
 	conn.Write(pbdata)
 	data = []byte("world")
-	pbdata, err = ClientEncode(protocol.DefaultProtocolVersion, protocol.ActionData, data)
+	pbdata, err = ClientEncode(protocol.TestCommandId_Up, data)
 	if err != nil {
 		panic(err)
 	}
@@ -43,13 +83,9 @@ func main() {
 }
 
 // ClientEncode :
-func ClientEncode(pbVersion, actionType uint16, data []byte) ([]byte, error) {
+func ClientEncode(actionType uint16, data []byte) ([]byte, error) {
 	result := make([]byte, 0)
 	buffer := bytes.NewBuffer(result)
-	if err := binary.Write(buffer, binary.BigEndian, pbVersion); err != nil {
-		s := fmt.Sprintf("Pack version error , %v", err)
-		return nil, errors.New(s)
-	}
 	if err := binary.Write(buffer, binary.BigEndian, actionType); err != nil {
 		s := fmt.Sprintf("Pack type error , %v", err)
 		return nil, errors.New(s)
@@ -76,10 +112,8 @@ func ClientDecode(rawConn net.Conn) (*protocol.NetDataProtocol, error) {
 	if n != protocol.DefaultHeadLength {
 		return nil, err
 	}
-	// parse protocol header
 	bytesBuffer := bytes.NewBuffer(headData)
-	binary.Read(bytesBuffer, binary.BigEndian, &newPackage.Version)
-	binary.Read(bytesBuffer, binary.BigEndian, &newPackage.ActionType)
+	binary.Read(bytesBuffer, binary.BigEndian, &newPackage.CommandId)
 	binary.Read(bytesBuffer, binary.BigEndian, &newPackage.DataLength)
 	if newPackage.DataLength < 1 {
 		return &newPackage, nil

@@ -1,0 +1,10 @@
+https://golang.design/under-the-hood/zh-cn/part2runtime/ch07alloc/basic/
+
+Go 的内存分配器主要包含以下几个核心组件：
+
+heapArena: 保留整个虚拟地址空间
+mheap：分配的堆，在页大小为 8KB 的粒度上进行管理
+mspan：是 mheap 上管理的一连串的页
+mcentral：收集了给定大小等级的所有 span
+mcache：为 per-P 的缓存。
+
