@@ -20,8 +20,8 @@ const (
 	MaxDataSize_Server = 32 * 1024
 
 	ErrEvents = syscall.EPOLLERR | syscall.EPOLLHUP | syscall.EPOLLRDHUP
-	OutEvents = ErrEvents | syscall.EPOLLOUT
-	InEvents  = ErrEvents | syscall.EPOLLIN | syscall.EPOLLPRI
+	OutEvents = syscall.EPOLLOUT | (syscall.EPOLLET & 0xffffffff)
+	InEvents  = syscall.EPOLLIN | (syscall.EPOLLET & 0xffffffff)
 )
 
 type EpollServerService struct {
@@ -54,7 +54,7 @@ func (s *EpollServerService) StartUp() {
 	// epoll_ctl
 	event := &syscall.EpollEvent{
 		Fd:     int32(s.sockfd),
-		Events: uint32(syscall.EPOLLIN),
+		Events: InEvents,
 	}
 	err = syscall.EpollCtl(epfd, syscall.EPOLL_CTL_ADD, s.sockfd, event)
 	if err != nil {
@@ -64,7 +64,6 @@ func (s *EpollServerService) StartUp() {
 	// Buffer where events are returned
 	//var events [MaxEvents]syscall.EpollEvent
 	//events := make([]syscall.EpollEvent, MaxEvents)
-	events := make([]syscall.EpollEvent, 100)
 
 	// listen
 	err = syscall.Listen(s.sockfd, BackLog)
@@ -72,20 +71,23 @@ func (s *EpollServerService) StartUp() {
 		fmt.Println("listen error ", err.Error())
 		return
 	}
-	// 数据缓存区域
-	buf := make([]byte, MaxDataSize_Server)
-
 	var n int
 	var connFd int
 
 	for {
-		//var numbytes int
+		var numbytes int
+		events := make([]syscall.EpollEvent, 100)
+
+		// 数据缓存区域
+		buf := make([]byte, MaxDataSize_Server)
+
 		n, err = syscall.EpollWait(epfd, events, -1)
 		if err != nil {
 			fmt.Println("epollwait error ", err.Error())
 			break
+		} else {
+			fmt.Printf("epoll_wait 触发! n=%d \n", n)
 		}
-		//fmt.Printf("epoll_wait 触发! n=%d \n", n)
 		for i := 0; i < n; i++ {
 			/* We have a notification on the listening socket, which means one or more incoming connections. */
 			if int(events[i].Fd) == s.sockfd {
@@ -98,7 +100,7 @@ func (s *EpollServerService) StartUp() {
 
 				syscall.SetNonblock(s.sockfd, true)
 				//EPOLLIN 连接到达,有数据来临; EPOLLET 边缘触发
-				event.Events = uint32(syscall.EPOLLIN | (syscall.EPOLLET & 0xffffffff))
+				event.Events = InEvents
 				event.Fd = int32(connFd)
 				//将新的fd添加到epoll的监听队列中
 				err = syscall.EpollCtl(epfd, syscall.EPOLL_CTL_ADD, connFd, event)
@@ -112,7 +114,7 @@ func (s *EpollServerService) StartUp() {
 				if (connFd) < 0 {
 					continue
 				}
-				_, err = syscall.Read(connFd, buf)
+				numbytes, err = syscall.Read(connFd, buf)
 				if err != nil {
 					fmt.Println("Read error ", connFd, err)
 					syscall.Close(connFd)
@@ -120,9 +122,15 @@ func (s *EpollServerService) StartUp() {
 					syscall.EpollCtl(epfd, syscall.EPOLL_CTL_DEL, connFd, event)
 					continue
 				}
-				//	fmt.Println("received msg=", string(buf))
+				if numbytes <= 0 {
+					syscall.Close(connFd)
+					event.Fd = -1
+					syscall.EpollCtl(epfd, syscall.EPOLL_CTL_DEL, connFd, event)
+					continue
+				}
+				fmt.Println("received msg=", string(buf))
 
-				event.Events = uint32(syscall.EPOLLOUT | (syscall.EPOLLET & 0xffffffff))
+				event.Events = OutEvents
 				event.Fd = int32(connFd)
 				//修改标识符，等待下一个循环时发送数据，异步处理的精髓
 				err = syscall.EpollCtl(epfd, syscall.EPOLL_CTL_MOD, connFd, event)
@@ -133,13 +141,13 @@ func (s *EpollServerService) StartUp() {
 			} else if (events[i].Events & syscall.EPOLLOUT) != 0 {
 				//有数据待发送，写socket
 				connFd = int(events[i].Fd)
-				syscall.Write(connFd, buf) //发送数据
+				syscall.Write(connFd, []byte("server resp")) //发送数据
 
-				event.Events = uint32(syscall.EPOLLIN | (syscall.EPOLLET & 0xffffffff))
+				event.Events = InEvents
 				event.Fd = int32(connFd)
 				//修改标识符，等待下一个循环时接收数据
 				err = syscall.EpollCtl(epfd, syscall.EPOLL_CTL_MOD, connFd, event)
-			} else if (events[i].Events&syscall.EPOLLERR) != 0 || (events[i].Events&syscall.EPOLLHUP) != 0 {
+			} else if (events[i].Events & ErrEvents) != 0 {
 				// An error has occured on this fd, or the socket is not ready for reading (why were we notified then?)
 				fmt.Println("epoll error ")
 				connFd = int(events[i].Fd)

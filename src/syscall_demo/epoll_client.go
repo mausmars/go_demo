@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -16,7 +17,6 @@ func main() {
 const (
 	MaxDataSize_Client = 32 * 1024
 )
-
 
 type EpollClientService struct {
 	Port   int
@@ -45,22 +45,30 @@ func (s *EpollClientService) StartUp() {
 		fmt.Println("Connect error: ", err.Error())
 		return
 	}
-	msg := "Hello, world!"
-	_, err = syscall.Write(s.sockfd, []byte(msg))
-	if err != nil {
-		fmt.Println("Write error: ", err.Error())
-		return
-	}
 	// 数据缓存区域
 	buf := make([]byte, MaxDataSize_Client)
+	msg := "Hello, World 1 !"
+	s.sendMsg(msg, buf)
+	time.Sleep(5 * time.Second)
+	msg = "Hello, World 2!"
+	s.sendMsg(msg, buf)
+	//关闭连接
+	syscall.Close(s.sockfd)
+}
+
+func (s *EpollClientService) sendMsg(msg string, buf []byte) error {
+	_, err := syscall.Write(s.sockfd, []byte(msg))
+	if err != nil {
+		fmt.Println("Write error: ", err.Error())
+		return err
+	}
 	_, err = syscall.Read(s.sockfd, buf)
 	if err != nil {
 		fmt.Println("Read error: ", err.Error())
-		return
+		return err
 	}
 	fmt.Println("received msg=", string(buf))
-	//关闭连接
-	syscall.Close(s.sockfd)
+	return nil
 }
 
 func (s *EpollClientService) setSockeopt() error {
