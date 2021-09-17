@@ -1,0 +1,24 @@
+安装 kitex：
+$ go install github.com/cloudwego/kitex/tool/cmd/kitex@latest
+
+安装 thriftgo：
+$ go install github.com/cloudwego/thriftgo@latest
+
+$ kitex --version
+$ thriftgo --version
+
+git clone https://github.com/cloudwego/kitex-examples.git
+
+go get github.com/cloudwego/netpoll
+go get github.com/cloudwego/kitex/tool/cmd/kitex
+-----------------------------------------------------------------
+demo
+https://github.com/cloudwego/kitex/blob/develop/docs/guide/getting_started_cn.md
+
+windows下执行报错，linux可以
+kitex -service go_demo hello.thrift
+
+# 若当前目录不在 $GOPATH/src 下，需要加上 -module 参数，一般为 go.mod 下的名字
+kitex -module go_demo -service go_demo hello.thrift
+
+
