@@ -1,0 +1,30 @@
+https://github.com/yireyun/go-proc
+
+//---------------------------------
+创建 exposed_sync.go
+
+package sync
+
+ func ProcPin() int {
+ 	return runtime_procPin()
+ }
+
+ func ProcUnpin() {
+ 	runtime_procUnpin()
+ }
+
+ func Semacquire(s *uint32) {
+ 	runtime_Semacquire(s)
+ }
+
+ func Semrelease(s *uint32, handoff bool, skipframes int) {
+ 	runtime_Semrelease(s, handoff, skipframes)
+ }
+//---------------------------------
+拷贝proc.go 到GOROOT 源码中
+copy /y .\sync\exposed_sync.go %GOROOT%\src\sync\
+
+超级用户执行
+go.exe build -i -a -v sync
+
+

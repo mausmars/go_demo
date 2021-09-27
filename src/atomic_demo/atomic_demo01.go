@@ -5,6 +5,7 @@ import (
 	"go.uber.org/atomic"
 )
 
+//cas
 func main() {
 	isRuning := atomic.NewBool(false)
 

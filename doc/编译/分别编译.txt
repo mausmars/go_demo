@@ -1,0 +1,17 @@
+只在 windows 系统下编译此文件，则需要在文件头部加上
+// +build windows
+
+在非 windows 系统下编译此文件，则需要在文件头部加上
+// +build !windows
+
+
+// +build linux freebsd dragonfly darwin
+
+
+
+// darwin, windows, linux
+if runtime.GOOS == "windows" {
+	......
+} else {
+	......
+}

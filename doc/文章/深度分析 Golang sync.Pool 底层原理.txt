@@ -1,0 +1,36 @@
+深度分析 Golang sync.Pool 底层原理
+https://www.cyhone.com/articles/think-in-sync-pool/
+https://www.qcrao.com/2020/04/20/dive-into-go-sync-pool/
+
+//----------------------------------------------------------------
+poolLocal 有一个 pad 属性，从这个属性的定义方式来看，明显是为了凑齐了 128 Byte 的整数倍
+pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+解决 false sharding 问题，提高性能
+
+解决方案 memory padding
+type poolLocal struct {
+	poolLocalInternal
+
+	// 将 poolLocal 补齐至两个缓存行的倍数，防止 false sharing,
+	// 每个缓存行具有 64 bytes，即 512 bit
+	// 目前我们的处理器一般拥有 32 * 1024 / 64 = 512 条缓存行
+	// 伪共享，仅占位用，防止在 cache line 上分配多个 poolLocalInternal
+	pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+}
+
+现代 cpu 中，cache 都划分成以 cache line (cache block) 为单位，在 x86_64 体系下一般都是 64 字节，cache line 是操作的最小单元
+
+程序即使只想读内存中的 1 个字节数据，也要同时把附近 63 节字加载到 cache 中，如果读取超个 64 字节，那么就要加载到多个 cache line 中。
+
+简单来说，如果没有 pad 字段，那么当需要访问 0 号索引的 poolLocal 时，CPU 同时会把 0 号和 1 号索引同时加载到 cpu cache。
+在只修改 0 号索引的情况下，会让 1 号索引的 poolLocal 失效。这样，当其他线程想要读取 1 号索引时，发生 cache miss，还得重新再加载，
+对性能有损。增加一个 pad，补齐缓存行，让相关的字段能独立地加载到缓存行就不会出现 false sharding 了。
+--------------------------------------
+
+这里是为了避免 CPU Cache 的 false sharing 问题：CPU Cache Line 通常是以 64 byte 或 128 byte 为单位。
+在我们的场景中，各个 P 的 poolLocal 是以数组形式存在一起。假设 CPU Cache Line 为 128 byte，而 poolLocal 不足 128 byte 时，
+那 cacheline 将会带上其他 P 的 poolLocal 的内存数据，以凑齐一整个 Cache Line。如果这时，两个相邻的 P 同时在两个不同的 CPU 核上运行，
+将会同时去覆盖刷新 CacheLine，造成 Cacheline 的反复失效，那 CPU Cache 将失去了作用。
+
+CPU Cache 是距离 CPU 最近的 cache，如果能将其运用好，会极大提升程序性能。Golang 这里为了防止出现 false sharing 问题，主动使用 pad 的方式凑齐 128 个 byte，
+这样就不会和其他 P 的 poolLocal 共享一套 CacheLine。

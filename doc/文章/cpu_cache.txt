@@ -1,0 +1,63 @@
+CPU缓存
+https://www.cnblogs.com/xuanbjut/p/11608991.html
+
+下面是三级缓存的处理速度参考表：
+
+从CPU到	大约需要的CPU周期	大约需要的时间(单位ns)
+寄存器	    1 cycle
+L1 Cache	~3-4 cycles	    ~0.5-1 ns
+L2 Cache	~10-20 cycles	~3-7 ns
+L3 Cache	~40-45 cycles	~15 ns
+跨槽传输	 	~20 ns
+内存	~120-240 cycles	~60-120ns
+
+--------------
+L1 Cache，分为数据缓存和指令缓存，逻辑核独占
+L1 Cache， 一个存数据 L1d Cache， 一个存指令 L1i Cache
+
+L2 Cache，物理核独占，逻辑核共享
+L3 Cache，所有物理核共享
+--------------
+查看高速缓存
+$ getconf -a | grep CACHE
+
+$ cat /sys/devices/system/cpu/cpu1/cache/index0/coherency_line_size
+
+macos
+$ sysctl -a | grep cacheline
+
+---------------------------------------------
+Go 开发者必读：CPU 高速缓存原理和应用
+https://learnku.com/go/t/45683
+原文
+https://teivah.medium.com/go-and-cpu-caches-af5d32cc5592
+
+高速缓存相关
+loop nest optimization 技术
+false sharing 问题
+memory padding 解决方案
+------------
+loop nest optimization 技术
+只需要在给定的块内进行迭代，以尽可能多地受益于高速缓存行
+例子：可以将大数据分割遍历，保证小的数组能在cacheline中提高性能。
+
+false sharing 问题
+处理器如何维护缓存一致性？如果两条高速缓存行共享一些公共地址，则处理器会将它们标记为 Shared。
+如果一个线程修改了 Shared 行，它将都标记为 Modified 。为了保证高速缓存的一致性，它需要内核之间的协调，
+这可能会大大降低应用程序的性能
+
+memory padding 解决方案
+type poolLocal struct {
+	poolLocalInternal
+
+	// 将 poolLocal 补齐至两个缓存行的倍数，防止 false sharing,
+	// 每个缓存行具有 64 bytes，即 512 bit
+	// 目前我们的处理器一般拥有 32 * 1024 / 64 = 512 条缓存行
+	// 伪共享，仅占位用，防止在 cache line 上分配多个 poolLocalInternal
+	pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+}
+
+---------------------------------------------
+
+
+
