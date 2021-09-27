@@ -1,8 +1,7 @@
-package unsafe_demo
+package main
 
 import (
 	"fmt"
-	"testing"
 	"unsafe"
 )
 
@@ -22,19 +21,19 @@ type Test2 struct {
 	e uint64
 }
 
-func TestUnsafe(t *testing.T) {
+func main() {
 	data := make([]byte, 32)
 	for i := 0; i < len(data); i++ {
 		data[i] = 0
 	}
 	address := (**Test1)(unsafe.Pointer(&data))
-	(*address).a=uint8(1)
-	(*address).b=uint8(2)
-	(*address).c=uint8(3)
-	(*address).d=uint32(4)
-	(*address).e=uint64(5)
+	(*address).a = uint8(1)
+	(*address).b = uint8(2)
+	(*address).c = uint8(3)
+	(*address).d = uint32(4)
+	(*address).e = uint64(5)
 	for i := 0; i < len(data); i++ {
-		fmt.Print(data[i]," ")
+		fmt.Print(data[i], " ")
 	}
 	fmt.Println("--------------------------")
 }

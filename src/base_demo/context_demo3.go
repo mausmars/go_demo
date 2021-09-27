@@ -16,6 +16,6 @@ func main() {
 	case <-time.After(999 * time.Second):
 		fmt.Println("overslept")
 	case <-ctx.Done():
-		fmt.Println(ctx.Err()) // prints "context deadline exceeded"
+		fmt.Println("error ", ctx.Err()) // prints "context deadline exceeded"
 	}
 }

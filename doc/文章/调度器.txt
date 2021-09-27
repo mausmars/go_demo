@@ -1,0 +1,22 @@
+https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/
+
+基于协作的抢占式调度
+https://github.com/golang/go/blob/go1.2/src/pkg/runtime/proc.c
+
+基于信号的抢占式调度
+
+---------------------
+非均匀内存访问调度器 Non-uniform memory access，NUMA
+
+
+
+
+
+
+
+
+
+
+
+
+
