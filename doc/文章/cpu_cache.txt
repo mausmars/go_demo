@@ -1,8 +1,8 @@
 CPU缓存
 https://www.cnblogs.com/xuanbjut/p/11608991.html
+https://zhuanlan.zhihu.com/p/370057417
 
 下面是三级缓存的处理速度参考表：
-
 从CPU到	大约需要的CPU周期	大约需要的时间(单位ns)
 寄存器	    1 cycle
 L1 Cache	~3-4 cycles	    ~0.5-1 ns
@@ -17,6 +17,35 @@ L1 Cache， 一个存数据 L1d Cache， 一个存指令 L1i Cache
 
 L2 Cache，物理核独占，逻辑核共享
 L3 Cache，所有物理核共享
+
+--------------
+协议MESI，应该是针对L1和L2 数据一致性的
+
+MESI优化和他们引入的问题
+缓存的一致性消息传递是要时间的，这就使其切换时会产生延迟。当一个缓存被切换状态时其他缓存收到消息完成各自的切换并且发出回应消息这么一长串的时间中CPU都会等待所有缓存响应完成。
+可能出现的阻塞都会导致各种各样的性能问题和稳定性问题。
+
+CPU切换状态阻塞解决-存储缓存（Store Bufferes）
+Store Bufferes的风险
+第一、就是处理器会尝试从存储缓存（Store buffer）中读取值，但它还没有进行提交。这个的解决方案称为Store Forwarding，它使得加载的时候，如果存储缓存中存在，则进行返回。
+第二、保存什么时候会完成，这个并没有任何保证。
+重排序（reordings）
+
+结论：Store Bufferes 会造成指令重排序
+-----------------
+内存屏障 Memory Barriers
+硬件内存模型
+执行失效也不是一个简单的操作，它需要处理器去处理。另外，存储缓存（Store Buffers）并不是无穷大的，所以处理器有时需要等待失效确认的返回。这两个操作都会使得性能大幅降低。
+为了应付这种情况，引入了失效队列。它们的约定如下：
+1.对于所有的收到的Invalidate请求，Invalidate Acknowlege消息必须立刻发送Invalidate并不真正执行，而是被放在一个特殊的队列中，在方便的时候才会去执行。
+2.处理器不会发送任何消息给所处理的缓存条目，直到它处理Invalidate。 即便是这样处理器已然不知道什么时候优化是允许的，而什么时候并不允许。 干脆处理器将这个任务丢给了写代码的人。
+这就是内存屏障（Memory Barriers）。
+
+写屏障 Store Memory Barrier(a.k.a. ST, SMB, smp_wmb)是一条告诉处理器在执行这之后的指令之前，应用所有已经在存储缓存（store buffer）中的保存的指令。
+读屏障Load Memory Barrier (a.k.a. LD, RMB, smp_rmb)是一条告诉处理器在执行任何的加载前，先应用所有已经在失效队列中的失效操作的指令。
+
+内存屏障 Memory Barriers
+结论：计算机无法确定何时通知，将这个处理交给了程序员自己解决这个并发问题。哈哈
 --------------
 查看高速缓存
 $ getconf -a | grep CACHE
