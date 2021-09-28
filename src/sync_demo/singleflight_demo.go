@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"golang.org/x/sync/singleflight"
 	"sync"
@@ -8,7 +9,7 @@ import (
 )
 
 //singleflight 减少重复操作，函数没执行完毕不会重复请求。
-
+//--------------------
 //singleflight 是 Go 语言扩展包中提供了另一种同步原语，它能够在一个服务中抑制对下游的多次重复请求。
 //一个比较常见的使用场景是：我们在使用 Redis 对数据库中的数据进行缓存， 发生缓存击穿时，大量的流量都会打到数据库上进而影响服务的尾延时
 
@@ -32,10 +33,20 @@ func getArticle(key string, count *int32, i int) (article string, err error) {
 }
 
 func singleflightGetArticle(sg *singleflight.Group, key string, count *int32, i int) (string, error) {
-	v, err, _ := sg.Do(key, func() (interface{}, error) {
+	ch := sg.DoChan(key, func() (interface{}, error) {
 		return getArticle(key, count, i)
 	})
-	return v.(string), err
+	timeout := time.After(500 * time.Millisecond)
+	var ret singleflight.Result
+	select {
+	case <-timeout: // Timeout elapsed
+		fmt.Println("Timeout")
+	case ret = <-ch: // Received result from channel
+		v := ret.Val
+		//fmt.Printf("val: %v, shared: %v\n", v, ret.Shared)
+		return v.(string), ret.Err
+	}
+	return "", errors.New("ddddd")
 }
 
 func main() {
