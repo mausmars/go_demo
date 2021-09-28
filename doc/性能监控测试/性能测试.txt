@@ -3,5 +3,16 @@ https://pkg.go.dev/cmd/go#hdr-Testing_flags
 go test -bench=. -benchmem -cpu 4
 
 
+go test -v -bench="MatrixCombination$" -benchmem -count=12 -benchtime 1s -timeout 2s -run=none
 
+go test -v -bench=. -benchmem -run=none
 
+go test -v -bench="StructureFalseSharing$" -benchmem -run=none
+
+//指定文件批量测试
+go test -v -cpu 1,2,4 -benchmem -bench=. atomic_vs_mutex2_test.go
+
+//批量测试
+func BenchmarkXXX(b *testing.B){
+
+}
