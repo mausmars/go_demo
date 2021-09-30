@@ -1,0 +1,93 @@
+https://segmentfault.com/a/1190000040160235
+
+零拷贝思路，降低cpu拷贝数据，对高速缓存的污染。
+
+Linux 的零拷贝技术，相较于
+mmap
+sendfile
+MSG_ZEROCOPY
+splice 从使用成本、性能和适用范围等维度综合来看更适合在程序中作为一种通用的零拷贝方式
+
+
+---------------------------------------------
+https://strikefreedom.top/linux-io-and-zero-copy
+linux-io-and-zero-copy
+
+一、减少甚至避免用户空间和内核空间之间的数据拷贝：
+在一些场景下，用户进程在数据传输过程中并不需要对数据进行访问和处理，那么数据在 Linux 的 Page Cache 和用户进程的缓冲区之间的传输就完全可以避免，
+让数据拷贝完全在内核里进行，甚至可以通过更巧妙的方式避免在内核里的数据拷贝。这一类实现一般是通过增加新的系统调用来完成的，
+比如 Linux 中的 mmap()，sendfile() 以及 splice() 等。
+
+二、绕过内核的直接 I/O：
+允许在用户态进程绕过内核直接和硬件进行数据传输，内核在传输过程中只负责一些管理和辅助的工作。这种方式其实和第一种有点类似，也是试图避免用户空间和内核空间之间的数据传输，
+只是第一种方式是把数据传输过程放在内核态完成，而这种方式则是直接绕过内核和硬件通信，效果类似但原理完全不同。
+
+三、内核缓冲区和用户缓冲区之间的传输优化：
+这种方式侧重于在用户进程的缓冲区和操作系统的页缓存之间的 CPU 拷贝的优化。这种方法延续了以往那种传统的通信方式，但更灵活。
+
+---------------------------------------------
+传统 I/O 读写模式
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t count);
+ssize_t write(int fd, const void *buf, size_t count);
+
+
+一、减少甚至避免用户空间和内核空间之间的数据拷贝
+1.mmap()
+#include <sys/mman.h>
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+int munmap(void *addr, size_t length);
+
+2.sendfile()
+在 Linux 内核 2.1 版本中，引入了一个新的系统调用 sendfile()：
+#include <sys/sendfile.h>
+ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);
+
+3.sendﬁle() with DMA Scatter/Gather Copy
+sendfile() + DMA Scatter/Gather 的零拷贝方案虽然高效，但是也有两个缺点：
+这种方案需要引入新的硬件支持；
+虽然 sendfile() 的输出文件描述符在 Linux kernel 2.6.33 版本之后已经可以支持任意类型的文件描述符，但是输入文件描述符依然只能指向文件。
+
+4.splice()
+#include <fcntl.h>
+#include <unistd.h>
+int pipe(int pipefd[2]);
+int pipe2(int pipefd[2], int flags);
+ssize_t splice(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags);
+
+splice() 是基于 Linux 的管道缓冲区 (pipe buffer) 机制实现的，所以 splice() 的两个入参文件描述符才要求必须有一个是管道设备，一个典型的 splice() 用法是：
+int pfd[2];
+pipe(pfd);
+ssize_t bytes = splice(file_fd, NULL, pfd[1], NULL, 4096, SPLICE_F_MOVE);
+assert(bytes != -1);
+bytes = splice(pfd[0], NULL, socket_fd, NULL, bytes, SPLICE_F_MOVE | SPLICE_F_MORE);
+assert(bytes != -1);
+
+splice() 是基于 pipe buffer 实现的，但是它在通过管道传输数据的时候却是零拷贝，因为它在写入读出时并没有使用 pipe_write()/pipe_read()
+真正地在管道缓冲区写入读出数据，而是通过把数据在内存缓冲区中的物理内存页框指针、偏移量和长度赋值给前文提及的 pipe_buffer 中对应的三个字段来完成数据的"拷贝"，
+也就是其实只拷贝了数据的内存地址等元信息。
+splice() 在 Linux 内核源码中的内部实现是 do_splice() 函数，而写入读出管道则分别是通过 do_splice_to() 和 do_splice_from()
+
+5.send() with MSG_ZEROCOPY
+if (setsockopt(socket_fd, SOL_SOCKET, SO_ZEROCOPY, &one, sizeof(one))){
+    error(1, errno, "setsockopt zerocopy");
+}
+ret = send(socket_fd, buffer, sizeof(buffer), MSG_ZEROCOPY);
+只适用于大文件 (10KB 左右) 的场景，小文件场景因为 page pinning 页锁定和等待缓冲区释放的通知消息这些机制，甚至可能比直接 CPU 拷贝更耗时；
+因为可能异步发送数据，需要额外调用 poll() 和 recvmsg() 系统调用等待 buffer 被释放的通知消息，增加代码复杂度，以及会导致多次用户态和内核态的上下文切换；
+MSG_ZEROCOPY 目前只支持发送端，接收端暂不支持。
+
+------------------
+二、绕过内核的直接 I/O
+1.用户直接访问硬件
+
+2.内核控制访问硬件
+
+------------------
+三、内核缓冲区和用户缓冲区之间的传输优化
+1.动态重映射与写时拷贝 (Copy-on-Write)
+2.缓冲区共享 (Buffer Sharing)
+
+
+
+
