@@ -1,0 +1,8 @@
+先安装
+apt-get install open-vm-tools
+
+cd /media/cdrom
+cp VMwareTools-10.3.23-17030940.tar.gz /software
+tar -zxvf VMwareTools-10.3.23-17030940.tar.gz
+安装
+./vmware-install.pl

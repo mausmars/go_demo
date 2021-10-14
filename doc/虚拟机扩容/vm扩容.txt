@@ -1,0 +1,36 @@
+https://cloud.tencent.com/developer/article/1561455
+https://cloud.tencent.com/developer/article/1603440
+
+Debian
+apt-get install lvm2
+
+查看分区情况
+fdisk -l
+
+设置分区
+fdisk /dev/sda
+输入p指令，查看已分区数量（有两个 /dev/sda1 /dev/sda2）
+输入 n {new partition}指令，新增加一个分区
+输入p {primary partition}，分区类型选择为主分区
+输入分区号 3 {partition number} ，分区号选3（上面显示我已经有2个分区了）
+回车　　　　　　默认（起始扇区）
+回车　　　　　　默认（结束扇区）
+输入t {change partition id}指令，修改分区类型
+按提示输入刚才的分区号3
+输入分区类型 8e {Linux LVM partition}
+输入w指令，将以上改动写入分区表
+最后完成，退出fdisk命令
+
+重启系统 reboot
+-----------------------
+对新添加的硬盘格式化
+mkfs.ext3 /dev/sda3
+
+添加新LVM到已有的LVM组，实现扩容
+
+
+pvcreate  /dev/sda4
+
+pvdisplay
+
+vgextend VolGroup /dev/sda4
